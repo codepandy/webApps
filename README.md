@@ -1,70 +1,74 @@
-# Getting Started with Create React App
+# 背景
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+开发一些自己的小功能网站
 
-## Available Scripts
+## 技术架构
 
-In the project directory, you can run:
+create-react-app 于 2022 年 6 月创建。
 
-### `npm start`
+## 打包路径变更
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+因为我是部署在 github pages 上，所以文件夹名要求是 docs，因此更改为了 docs。
+更改位置在`config/paths.js`中
+这里是对项目一些路径的定义
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```js
+const buildPath = process.env.BUILD_PATH || "docs";
+```
 
-### `npm test`
+## 项目部署子文件夹的配置
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+我的 github 有主要的部署项目，因此所有的其他项目部署都需要一个前缀来区分。
+比如这个项目就是`webApps`，因此所有的资源路径都得加上`/webApps/`才行，比如：`/webApps/favicon.icon`
+这个是 webpack 在打包的时候，是`output`的`publicPath`属性来决定的，因此直接配置这个属性就行了。
 
-### `npm run build`
+```js
+output:{
+    publicPath: paths.publicUrlOrPath,
+}
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+但是 `create-react-app` 对路径都做了封装，在 paths.js 文件中，因此修改 paths 中的定义即可。
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```js
+const publicUrlOrPath = getPublicUrlOrPath(
+  process.env.NODE_ENV === "development",
+  require(resolveApp("package.json")).homepage,
+  process.env.PUBLIC_URL
+);
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+从上面代码可以看出，这个路径读取的是 package.json 的 homepage 属性，因此直接配置 package.json 的 homepage 即可。
 
-### `npm run eject`
+## 增加本地打包命令
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+配置了 homepage 后，虽然打包提交到 github 没问题，但是打本地包测试很麻烦，需要删除 homepage 的配置才能行，不然路径就不对。
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+因此我增加了一个打本地包的命令
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```js
+"scripts"{
+    "build:locale": "cross-env BUILDFORLOCAL=true node scripts/build.js",
+}
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+homepage 影响到两个地方：
 
-## Learn More
+1. 一个是 webpack 打包的时候用的，就是 output 的 publicpath
+2. 一个是 public/index.html 文件中直接引用的资源路径
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+这个两个用的都是 paths.js 文件中的 publicUrlOrPath，因此修改 publicUrlOrPath 就行了。
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```js
+const tmpPublickPath = getPublicUrlOrPath(
+  process.env.NODE_ENV === "development",
+  require(resolveApp("package.json")).homepage,
+  process.env.PUBLIC_URL
+);
+// 本地构建，这本地测试时就不需要改homepage的值了
+const isBuildForLocal = process.env.BUILDFORLOCAL === "true";
+const publicUrlOrPath = isBuildForLocal ? "" : tmpPublickPath;
+```
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+如果是本地打包就用空路径，上线就用配置的路径，搞定。
+同时把线上和本地的打包路径也做了区分，本地的打包还有 build，线上使用 docs
