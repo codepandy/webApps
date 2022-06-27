@@ -325,6 +325,12 @@ const companies = [
     textColor: "white",
   },
   {
+    symbol: "chendezhuqi",
+    name: "沉得住气",
+    backgroundColor: "#E21D38",
+    textColor: "white",
+  },
+  {
     symbol: "zhixianjue",
     name: "知先觉",
     backgroundColor: "#00477F",
@@ -429,6 +435,18 @@ const companies = [
   {
     symbol: "guangmingleiluo",
     name: "光明磊落",
+    backgroundColor: "#E21D38",
+    textColor: "white",
+  },
+  {
+    symbol: "ruizhi",
+    name: "睿智",
+    backgroundColor: "#E21D38",
+    textColor: "white",
+  },
+  {
+    symbol: "kuanhou",
+    name: "宽厚",
     backgroundColor: "#E21D38",
     textColor: "white",
   },
