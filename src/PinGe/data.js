@@ -403,6 +403,12 @@ const companies = [
     textColor: "white",
   },
   {
+    symbol: "houdao",
+    name: "厚道",
+    backgroundColor: "#5D5D5F",
+    textColor: "white",
+  },
+  {
     symbol: "shoufa",
     name: "守法",
     backgroundColor: "#FF0200",
